@@ -4,10 +4,12 @@ from flask import Flask
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True) # インスタンスの作成
+    
+    # appが使用するconfigマップ
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'), # DBファイルが保存されるパス
     )
 
     if test_config is None:
@@ -27,5 +29,14 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
+    
+    from . import db
+    db.init_app(app)
+    
+    # blueprint読み込み
+    from . import auth, blog
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(blog.bp)
+    app.add_url_rule('/', endpoint='index')
 
     return app
